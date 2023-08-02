@@ -13,11 +13,15 @@ class HealthCheckSystem:
     def __init__(self, config):
         self.config = config
         load_dotenv()
+
         # boto3 client instantiation
-        self.ses_client = boto3.client(
-            'ses', region_name='us-east-2', aws_access_key_id=getenv('AWS_ACCESS_KEY_ID'), aws_secret_access_key=getenv('AWS_ACCESS_SECRET_KEY'))
-        logging.basicConfig(filename='healthcheck.log', level=logging.INFO,
-                            format='%(asctime)s %(levelname)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        try:
+            self.ses_client = boto3.client(
+                'ses', region_name='us-east-2', aws_access_key_id=getenv('AWS_ACCESS_KEY_ID'), aws_secret_access_key=getenv('AWS_ACCESS_SECRET_KEY'))
+            logging.basicConfig(filename='healthcheck.log', level=logging.INFO,
+                                format='%(asctime)s %(levelname)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        except (BotoCoreError, ClientError) as error:
+            logging.error(f'Error instantiating boto3 client: {error}')
 
     def check_api(self, endpoints):
         retries = 0
